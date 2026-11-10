@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f5f3ed">
+  <!-- SQLite's WebAssembly is embedded in its script; file:// needs no fetch. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob: data:; frame-src blob:; object-src blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>paperVault · Your essentials, together</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="vendor/sql-wasm-inline.js"></script>
+  <script defer src="database.js"></script>
+  <script defer src="icons.js"></script>
+  <script defer src="files.js"></script>
+  <script defer src="samples.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to documents</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Vault navigation">
+      <a class="brand" href="./index.html" aria-label="paperVault home"><span class="brand-mark" data-icon="layers"></span><span>paper<span class="brand-light">Vault</span><span class="brand-period">.</span></span></a>
+      <div class="sidebar-section-label">YOUR SPACE</div>
+      <nav class="nav-list" aria-label="Collections">
+        <button class="nav-item active" data-filter="all" aria-current="page"><span data-icon="grid"></span>All documents<span class="count" id="all-count">0</span></button>
+        <button class="nav-item" data-filter="favorites"><span data-icon="star"></span>Favorites<span class="count" id="favorite-count">0</span></button>
+      </nav>
+      <div class="sidebar-section-label collection-label">COLLECTIONS</div>
+      <nav class="nav-list" aria-label="Document categories">
+        <button class="nav-item" data-filter="Identity"><span class="category-dot identity-dot"></span>Identity<span class="count" id="identity-count">0</span></button>
+        <button class="nav-item" data-filter="Travel"><span class="category-dot travel-dot"></span>Travel<span class="count" id="travel-count">0</span></button>
+        <button class="nav-item" data-filter="Photos"><span class="category-dot photos-dot"></span>Photos<span class="count" id="photos-count">0</span></button>
+        <button class="nav-item" data-filter="Other"><span class="category-dot other-dot"></span>Other<span class="count" id="other-count">0</span></button>
+      </nav>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <label class="search-field"><span data-icon="search"></span><input id="search" type="search" placeholder="Find a document by its description…" autocomplete="off" aria-label="Search document descriptions"><kbd>/</kbd></label>
+        <span class="offline-label"><span class="online-dot"></span>On your device</span>
+        <button class="icon-button help-button" id="help-button" aria-label="About storage and privacy"><span data-icon="help"></span></button>
+      </header>
+
+      <main id="main">
+        <section class="page-heading" aria-labelledby="page-title"><div><h1 id="page-title">Store passport, tickets, important documents</h1></div><button class="button primary" id="add-button" disabled><span data-icon="plus"></span>Add documents</button></section>
+
+        <!-- The status strip distinguishes in-memory edits from an actual disk save. -->
+        <section class="vault-strip" aria-label="Database status"><span class="vault-file-icon" data-icon="database"></span><div class="vault-file"><strong id="database-name">Untitled vault</strong><span id="save-status" role="status">Starting SQLite…</span></div><div class="database-actions"><button class="button subtle" id="open-button" disabled><span data-icon="folder"></span>Open database</button><button class="button subtle save-button" id="save-button" disabled><span data-icon="download"></span>Save database</button><button class="icon-button" id="new-button" aria-label="Create a new empty vault" title="New vault" disabled><span data-icon="file-plus"></span></button></div></section>
+
+        <section class="documents-section" aria-labelledby="collection-title">
+          <div class="collection-heading"><div class="collection-title-line"><h2 id="collection-title">All documents</h2><span class="result-count" id="result-count">0</span></div><label class="sort-control"><span data-icon="sort"></span><span class="sr-only">Sort documents</span><select id="sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name">Description A–Z</option></select></label></div>
+          <div class="filter-row" aria-label="Filter document type"><button class="filter-chip selected" data-type="all" aria-pressed="true">Everything</button><button class="filter-chip" data-type="image" aria-pressed="false"><span data-icon="image"></span>Images</button><button class="filter-chip" data-type="pdf" aria-pressed="false"><span data-icon="file"></span>PDFs</button></div>
+          <div class="demo-banner" id="demo-banner" hidden><span data-icon="info"></span><span>This is a sample vault. Every document is fictional.</span><button class="text-button" id="clear-demo">Start my own vault <span aria-hidden="true">↗</span></button></div>
+          <div id="document-grid" class="document-grid" aria-label="Documents" aria-busy="true"></div>
+          <div class="empty-state" id="empty-state" hidden><div class="empty-art" aria-hidden="true"><span class="empty-paper back"></span><span class="empty-paper front"><span data-icon="file"></span><i></i><i></i></span><span class="empty-spark">✦</span></div><h3>Your essentials belong here.</h3><p>Add a file and a short description.<br>Find it again with just a word.</p><button class="button primary" id="empty-add"><span data-icon="plus"></span>Add your first document</button><button class="text-button sample-button" id="sample-button">Take a look around with sample documents <span aria-hidden="true">↗</span></button></div>
+          <div class="no-results" id="no-results" hidden><span data-icon="search"></span><h3>Nothing here just yet.</h3><p>Try another word or a different collection.</p><button class="button subtle" id="reset-filters">Clear search & filters</button></div>
+          <button class="dropzone" id="dropzone" aria-label="Choose documents or drop files here"><span class="drop-icon" data-icon="upload"></span><span><strong>A place for your next important thing.</strong><small>Drop files here, or <span class="accent">browse files</span> · Images & PDFs, up to 15 MB each</small></span><span class="drop-plus" data-icon="plus"></span></button>
+        </section>
+        <div class="fatal-error" id="fatal-error" role="alert" hidden></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Native dialogs supply focus containment, Escape behavior, and modal semantics. -->
+  <dialog id="upload-dialog" class="modal upload-modal" aria-labelledby="upload-title"><form id="upload-form"><div class="modal-header"><div><span class="modal-eyebrow">MAKE IT EASY TO FIND</span><h2 id="upload-title">A few words. All set.</h2></div><button type="button" class="icon-button" data-close="upload-dialog" aria-label="Close upload"><span data-icon="close"></span></button></div><p class="modal-description">Describe each file the way you’ll look for it later. “My ID” is perfect.</p><div id="upload-list" class="upload-list"></div><p class="form-error" id="upload-error" role="alert"></p><div class="modal-footer"><span id="upload-summary"></span><button type="submit" class="button primary" id="upload-submit"><span data-icon="plus"></span>Add to vault</button></div></form></dialog>
+
+  <dialog id="detail-dialog" class="modal detail-modal" aria-labelledby="detail-title"><div class="modal-header"><span class="modal-eyebrow">YOUR DOCUMENT</span><button class="icon-button" data-close="detail-dialog" aria-label="Close document"><span data-icon="close"></span></button></div><div id="detail-preview" class="detail-preview"></div><form id="detail-form"><h2 id="detail-title">Document details</h2><label class="field-label" for="detail-description">Short description</label><input class="text-input" id="detail-description" maxlength="240" required><label class="field-label" for="detail-category">Collection</label><select class="text-input" id="detail-category"><option>Identity</option><option>Travel</option><option>Photos</option><option>Other</option></select><div id="detail-meta" class="detail-meta"></div><p class="form-error" id="detail-error" role="alert"></p><div class="detail-actions"><button type="button" class="icon-button danger" id="delete-document" aria-label="Delete document"><span data-icon="trash"></span></button><button type="button" class="button subtle" id="download-document"><span data-icon="download"></span>Download</button><button type="submit" class="button primary">Save details</button></div></form></dialog>
+
+  <dialog id="help-dialog" class="modal help-modal" aria-labelledby="help-title"><div class="modal-header"><h2 id="help-title">Your vault, on your terms.</h2><button class="icon-button" data-close="help-dialog" aria-label="Close storage information"><span data-icon="close"></span></button></div><div class="help-content"><h3>One real SQLite file</h3><p>Your original images, PDFs, descriptions, and favorites are stored together inside a <code>.sqlite</code> database. Description search uses SQLite full-text search. File contents are not OCR-scanned or indexed.</p><h3>Keep it next to this page</h3><p>Choose <strong>Save database</strong> and save <code>paperVault.sqlite</code> beside <code>index.html</code>. Reopen the page and choose <strong>Open database</strong> to continue. Your browser requires your permission to access that file.</p><h3>Save your changes</h3><p>Edits stay in memory until you save. Supported browsers let you pick a file and update it on later saves. Other browsers download a new copy; reopen your latest copy next time. Closing without saving loses your changes.</p><h3>Private does not mean encrypted</h3><p>This app makes no network requests. The database and downloaded documents are <strong>unencrypted</strong>, and anyone with access to them can read them. Use device encryption and protect your backups. This is a prototype for personal use.</p><h3>Prototype limits</h3><p>JPEG, PNG, WebP, GIF, and PDF uploads. Up to 15 MB per file and 100 MB per database. Open only trusted paperVault databases. Search matches description words and their prefixes, with all search words required.</p></div><button class="button primary full-width" data-close="help-dialog">Got it</button></dialog>
+
+  <input id="file-picker" type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.pdf" multiple hidden>
+  <input id="database-picker" type="file" accept=".sqlite,.db,.sqlite3" hidden>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
